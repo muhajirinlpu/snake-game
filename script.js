@@ -10,12 +10,20 @@ const state = {
   direction: DIRECTION_RIGHT
 }
 
-const createBodyPart = ({ x = 0 , y = 0, w = 10, h = 10, direction }) => ({
-  x, y, w, h, direction,
-  isCollide: ({ x, y, w, h }) => {
-
+class Body {
+  constructor({x = 0, y = 0, w = 10, h = 10, direction}) {
+    this.x = x
+    this.y = y
+    this.w = w
+    this.h = h
+    this.direction = direction
   }
-})
+
+  isCollide(those) {
+    return this.x < those.x + those.w && this.x + this.w > those.x &&
+      this.y < those.y + those.h && this.y + this.h > those.y
+  }
+}
 
 class Game {
   constructor () {
@@ -24,7 +32,7 @@ class Game {
 
     // generate 5 body part of snakes
     for (let i = 5; i > 0; i--)
-      this.body.push(createBodyPart({ x: 10 * i, y: 10, direction: 'right' }))
+      this.body.push(new Body({ x: 10 * i, y: 10, direction: 'right' }))
   }
 
   compute () {
@@ -61,13 +69,25 @@ class Game {
   }
 
   get continue () {
-    const isSnakeHeadNotCollideWithTheWall = () => {
+    const isSnakeHeadDoesNotCollidedWithTheWall = () => {
       const snakeHead = this.body[0]
       return snakeHead.x + snakeHead.w <= WIDTH && snakeHead.y + snakeHead.h <= HEIGHT &&
         snakeHead.x > 0 && snakeHead.y > 0
     }
 
-    return isSnakeHeadNotCollideWithTheWall()
+    const isSnakeHeadDoesNotCollidedWithTail = () => {
+      const snakeHead = this.body[0]
+      for (let i = 2; i < this.body.length; i++) {
+        const snakeTail = this.body[i]
+        // console.log(i, snakeHead.isCollide(this.body[i]))
+        // console.table([snakeHead, this.body[i]])
+        if (snakeHead.isCollide(snakeTail))
+          return false
+      }
+      return true
+    }
+
+    return isSnakeHeadDoesNotCollidedWithTheWall() && isSnakeHeadDoesNotCollidedWithTail()
   }
 }
 
